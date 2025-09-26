@@ -3,7 +3,6 @@ import subprocess
 # ==== FIXED CONFIG ====
 STREAM_KEY = "cec7-xy4y-9y7e-xk7t-4qxa"
 DRIVE_ID = "1lI8B7mRLwfAnvUaB98wViRP2xAT9CVtA"
-OVERLAY_PATH = "overlay.gif"   # Repo me overlay.gif (ya mp4) file rakho
 AUDIO_FILE = "audio.mp3"
 
 def download_audio():
@@ -22,14 +21,15 @@ def start_stream():
 
     cmd = [
         "ffmpeg",
-        "-stream_loop", "-1", "-re", "-i", OVERLAY_PATH,
+        # black background video generate karega (720x1280 vertical format)
+        "-f", "lavfi", "-i", "color=size=720x1280:rate=30:color=black",
         "-stream_loop", "-1", "-re", "-i", AUDIO_FILE,
         "-c:v", "libx264",
         "-preset", "veryfast",
-        "-vf", "scale=720:1280",   # vertical format
         "-pix_fmt", "yuv420p",
         "-c:a", "aac",
         "-b:a", "128k",
+        "-shortest",  # video sirf audio ke duration tak chalega, phir loop
         "-f", "flv",
         rtmp_url
     ]
@@ -38,4 +38,5 @@ def start_stream():
 
 if __name__ == "__main__":
     download_audio()
-    start_stream()
+    while True:
+        start_stream()
