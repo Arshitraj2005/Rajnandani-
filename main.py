@@ -6,7 +6,7 @@ import threading
 STREAM_KEY = "cec7-xy4y-9y7e-xk7t-4qxa"  # Apna YouTube stream key
 DRIVE_ID = "1lI8B7mRLwfAnvUaB98wViRP2xAT9CVtA"  # Drive file ID
 AUDIO_FILE = "audio.mp3"
-OVERLAY_PATH = "overlay.mp4_Full HD 1080p_MEDIUM_FR30_(1).mp4"  # ya overlay.gif
+OVERLAY_PATH = "Project_09-26(2)_HD 720p_MEDIUM_FR30.mp4"  # ya overlay.gif
 
 # ==== FLASK SERVER FOR PORT BIND ====
 app = Flask(__name__)
