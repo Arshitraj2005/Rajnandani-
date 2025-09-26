@@ -22,18 +22,13 @@ def run_flask():
     app.run(host="0.0.0.0", port=10000)
 
 # ==== DOWNLOAD FILE FROM DRIVE ====
-def download_from_drive(drive_id, output_file, mode="video"):
+def download_from_drive(drive_id, output_file):
     if os.path.exists(output_file):
         print(f"⚡ {output_file} already exists, skipping download...")
         return
     print(f"⬇️ Downloading {output_file} from Google Drive...")
     url = f"https://drive.google.com/uc?id={drive_id}&export=download"
-
-    if mode == "audio":
-        cmd = ["yt-dlp", "-f", "bestaudio", "-o", output_file, url]
-    else:
-        cmd = ["yt-dlp", "-f", "best", "-o", output_file, url]
-
+    cmd = ["yt-dlp", "-f", "best", "-o", output_file, url]
     subprocess.run(cmd, check=True)
     print(f"✅ {output_file} downloaded successfully.")
 
@@ -44,22 +39,23 @@ def start_stream():
 
     cmd = [
         "ffmpeg",
-        "-stream_loop", "-1", "-i", VIDEO_FILE,   # infinite video loop
-        "-stream_loop", "-1", "-i", AUDIO_FILE,   # infinite audio loop
+        "-stream_loop", "-1", "-i", VIDEO_FILE,   # loop video
+        "-stream_loop", "-1", "-i", AUDIO_FILE,   # loop audio
         "-map", "0:v:0",
         "-map", "1:a:0",
 
-        # Video settings
+        # Video encoding (fixed output for YouTube)
         "-c:v", "libx264",
         "-preset", "veryfast",
-        "-b:v", "2500k",
+        "-b:v", "2500k",        # fixed bitrate → 720p 30fps smooth
         "-maxrate", "2500k",
         "-bufsize", "5000k",
         "-pix_fmt", "yuv420p",
-        "-g", "60",          # GOP = 2 sec for 30fps
-        "-r", "30",          # force 30fps output
+        "-g", "60",             # GOP = 2s for 30fps
+        "-r", "30",             # force 30fps output
+        "-vf", "scale=1280:720",# force 720p resolution
 
-        # Audio settings
+        # Audio encoding
         "-c:a", "aac",
         "-b:a", "128k",
         "-ar", "44100",
@@ -69,14 +65,12 @@ def start_stream():
 
     subprocess.run(cmd)
 
+# ==== MAIN ====
 if __name__ == "__main__":
-    # Flask server for keep-alive
     threading.Thread(target=run_flask, daemon=True).start()
-    
-    # Download video and audio from Drive
-    download_from_drive(VIDEO_DRIVE_ID, VIDEO_FILE, mode="video")
-    download_from_drive(AUDIO_DRIVE_ID, AUDIO_FILE, mode="audio")
-    
-    # Stream loop
+
+    download_from_drive(VIDEO_DRIVE_ID, VIDEO_FILE)
+    download_from_drive(AUDIO_DRIVE_ID, AUDIO_FILE)
+
     while True:
         start_stream()
