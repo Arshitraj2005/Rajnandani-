@@ -4,7 +4,7 @@ import subprocess
 STREAM_KEY = "cec7-xy4y-9y7e-xk7t-4qxa"   # Apna YouTube stream key daalna
 DRIVE_ID = "1lI8B7mRLwfAnvUaB98wViRP2xAT9CVtA"  # Apna Drive ID daalna
 AUDIO_FILE = "audio.mp3"
-OVERLAY_PATH = "overlay.gif"  # Repo me jo GIF/Video upload karoge uska naam
+OVERLAY_PATH = "overlay.mp4"  # Repo me jo GIF/Video upload karoge uska naam
 
 def download_audio():
     print("🎵 Downloading audio from Google Drive...")
