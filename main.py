@@ -3,10 +3,12 @@ from flask import Flask
 import threading
 
 # ==== CONFIG ====
-STREAM_KEY = "cec7-xy4y-9y7e-xk7t-4qxa"  # Apna YouTube stream key
-DRIVE_ID = "1lI8B7mRLwfAnvUaB98wViRP2xAT9CVtA"  # Drive file ID
-AUDIO_FILE = "audio.mp3"
-OVERLAY_PATH = "Project_09-26(2)_HD 720p_MEDIUM_FR30.mp4"  # ya overlay.gif
+STREAM_KEY = "cec7-xy4y-9y7e-xk7t-4qxa"        # YouTube stream key
+VIDEO_DRIVE_ID = "YOUR_VIDEO_DRIVE_ID"         # Drive ID of GIF/MP4
+AUDIO_DRIVE_ID = "1lI8B7mRLwfAnvUaB98wViRP2xAT9CVtA"  # Audio Drive ID
+
+VIDEO_FILE = "overlay.mp4"   # Downloaded video/GIF
+AUDIO_FILE = "audio.mp3"     # Downloaded audio
 
 # ==== FLASK SERVER FOR PORT BIND ====
 app = Flask(__name__)
@@ -18,16 +20,13 @@ def home():
 def run_flask():
     app.run(host="0.0.0.0", port=10000)
 
-# ==== DOWNLOAD AUDIO FROM DRIVE ====
-def download_audio():
-    print("🎵 Downloading audio from Google Drive...")
-    drive_url = f"https://drive.google.com/uc?id={DRIVE_ID}&export=download"
-    cmd = [
-        "yt-dlp", "-x", "--audio-format", "mp3",
-        "-o", AUDIO_FILE, drive_url
-    ]
+# ==== DOWNLOAD FILE FROM DRIVE ====
+def download_from_drive(drive_id, output_file):
+    print(f"⬇️ Downloading {output_file} from Google Drive...")
+    url = f"https://drive.google.com/uc?id={drive_id}&export=download"
+    cmd = ["yt-dlp", "-f", "best", "-o", output_file, url]
     subprocess.run(cmd, check=True)
-    print("✅ Audio downloaded successfully.")
+    print(f"✅ {output_file} downloaded successfully.")
 
 # ==== START YOUTUBE STREAM ====
 def start_stream():
@@ -36,10 +35,10 @@ def start_stream():
 
     cmd = [
         "ffmpeg",
-        "-stream_loop", "-1", "-re", "-i", OVERLAY_PATH,   # video loop
-        "-stream_loop", "-1", "-re", "-i", AUDIO_FILE,     # audio loop
-        "-map", "0:v:0",  # video from first input
-        "-map", "1:a:0",  # audio from second input
+        "-stream_loop", "-1", "-re", "-i", VIDEO_FILE,  # video loop
+        "-stream_loop", "-1", "-re", "-i", AUDIO_FILE,  # audio loop
+        "-map", "0:v:0",  # video from video file
+        "-map", "1:a:0",  # audio from audio file
         "-c:v", "libx264",
         "-preset", "veryfast",
         "-pix_fmt", "yuv420p",
@@ -55,8 +54,9 @@ if __name__ == "__main__":
     # Flask server for port binding
     threading.Thread(target=run_flask).start()
     
-    # Download audio
-    download_audio()
+    # Download video and audio from Drive
+    download_from_drive(VIDEO_DRIVE_ID, VIDEO_FILE)
+    download_from_drive(AUDIO_DRIVE_ID, AUDIO_FILE)
     
     # Start stream
     while True:
