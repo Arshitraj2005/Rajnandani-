@@ -1,9 +1,10 @@
 import subprocess
 
-# ==== FIXED CONFIG ====
-STREAM_KEY = "cec7-xy4y-9y7e-xk7t-4qxa"
-DRIVE_ID = "1lI8B7mRLwfAnvUaB98wViRP2xAT9CVtA"
+# ==== CONFIG ====
+STREAM_KEY = "cec7-xy4y-9y7e-xk7t-4qxa"   # Apna YouTube stream key daalna
+DRIVE_ID = "1lI8B7mRLwfAnvUaB98wViRP2xAT9CVtA"  # Apna Drive ID daalna
 AUDIO_FILE = "audio.mp3"
+OVERLAY_PATH = "overlay.gif"  # Repo me jo GIF/Video upload karoge uska naam
 
 def download_audio():
     print("🎵 Downloading audio from Google Drive...")
@@ -21,15 +22,13 @@ def start_stream():
 
     cmd = [
         "ffmpeg",
-        # black background video generate karega (720x1280 vertical format)
-        "-f", "lavfi", "-i", "color=size=720x1280:rate=30:color=black",
-        "-stream_loop", "-1", "-re", "-i", AUDIO_FILE,
+        "-stream_loop", "-1", "-re", "-i", OVERLAY_PATH,   # GIF/Video infinite loop
+        "-stream_loop", "-1", "-re", "-i", AUDIO_FILE,     # Audio infinite loop
         "-c:v", "libx264",
         "-preset", "veryfast",
         "-pix_fmt", "yuv420p",
         "-c:a", "aac",
         "-b:a", "128k",
-        "-shortest",  # video sirf audio ke duration tak chalega, phir loop
         "-f", "flv",
         rtmp_url
     ]
