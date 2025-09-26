@@ -4,8 +4,8 @@ import threading
 
 # ==== CONFIG ====
 STREAM_KEY = "cec7-xy4y-9y7e-xk7t-4qxa"        # YouTube stream key
-VIDEO_DRIVE_ID = "1wJ0yIycBGDjMo1jr5mbMlLU6t4TV-j5U"   # Drive ID of video/GIF
-AUDIO_DRIVE_ID = "1fO8xVEIKALIZAMMYcFEMQK4Rk0cFtBp6" # Drive ID of audio
+VIDEO_DRIVE_ID = "1SqqVbApLnkj8rSnmfYBH7Yva90MxhPwa"   # Drive ID of video/GIF
+AUDIO_DRIVE_ID = "1fO8xVEIKALIZAMMYcFEMQK4Rk0cFtBp6"  # Drive ID of audio
 
 VIDEO_FILE = "overlay.mp4"   # Downloaded video/GIF
 AUDIO_FILE = "audio.mp3"     # Downloaded audio
@@ -35,15 +35,21 @@ def start_stream():
 
     cmd = [
         "ffmpeg",
-        "-stream_loop", "-1", "-re", "-i", VIDEO_FILE,  # video loop
-        "-stream_loop", "-1", "-re", "-i", AUDIO_FILE,  # audio loop
-        "-map", "0:v:0",  # video from video file
-        "-map", "1:a:0",  # audio from audio file
+        "-stream_loop", "-1", "-re", "-i", VIDEO_FILE,   # loop video
+        "-stream_loop", "-1", "-re", "-i", AUDIO_FILE,   # loop audio
+        "-map", "0:v:0",
+        "-map", "1:a:0",
         "-c:v", "libx264",
         "-preset", "veryfast",
         "-pix_fmt", "yuv420p",
+        "-r", "30",              # fix fps at 30
+        "-g", "60",              # keyframe interval (2 sec)
+        "-b:v", "2000k",         # video bitrate
+        "-maxrate", "2500k",     # max bitrate
+        "-bufsize", "5000k",     # buffer size
         "-c:a", "aac",
-        "-b:a", "128k",
+        "-b:a", "128k",          # audio bitrate
+        "-ar", "44100",          # audio sample rate
         "-f", "flv",
         rtmp_url
     ]
@@ -51,14 +57,10 @@ def start_stream():
     subprocess.run(cmd)
 
 if __name__ == "__main__":
-    # Flask server for port binding
     threading.Thread(target=run_flask).start()
-    
-    # Download video and audio from Drive
+
     download_from_drive(VIDEO_DRIVE_ID, VIDEO_FILE)
     download_from_drive(AUDIO_DRIVE_ID, AUDIO_FILE)
-    
-    # Start stream
+
     while True:
         start_stream()
-        
