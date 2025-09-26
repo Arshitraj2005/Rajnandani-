@@ -4,8 +4,8 @@ import threading
 
 # ==== CONFIG ====
 STREAM_KEY = "cec7-xy4y-9y7e-xk7t-4qxa"        # YouTube stream key
-VIDEO_DRIVE_ID = "1rtQuKHJe5AZhHnLqpvDR_ksXYFdiQe4T"   # Drive ID of video/GIF
-AUDIO_DRIVE_ID = "1lI8B7mRLwfAnvUaB98wViRP2xAT9CVtA"  # Drive ID of audio
+VIDEO_DRIVE_ID = "1SqqVbApLnkj8rSnmfYBH7Yva90MxhPwa"   # Drive ID of video/GIF
+AUDIO_DRIVE_ID = "1ilOvOl76gwquhWU-Xz78rcTOwLPdnizY"  # Drive ID of audio
 
 VIDEO_FILE = "overlay.mp4"   # Downloaded video/GIF
 AUDIO_FILE = "audio.mp3"     # Downloaded audio
