@@ -22,13 +22,18 @@ def run_flask():
     app.run(host="0.0.0.0", port=10000)
 
 # ==== DOWNLOAD FILE FROM DRIVE ====
-def download_from_drive(drive_id, output_file):
+def download_from_drive(drive_id, output_file, mode="video"):
     if os.path.exists(output_file):
         print(f"⚡ {output_file} already exists, skipping download...")
         return
     print(f"⬇️ Downloading {output_file} from Google Drive...")
     url = f"https://drive.google.com/uc?id={drive_id}&export=download"
-    cmd = ["yt-dlp", "-f", "bestaudio/best", "-o", output_file, url]
+
+    if mode == "audio":
+        cmd = ["yt-dlp", "-f", "bestaudio", "-o", output_file, url]
+    else:
+        cmd = ["yt-dlp", "-f", "best", "-o", output_file, url]
+
     subprocess.run(cmd, check=True)
     print(f"✅ {output_file} downloaded successfully.")
 
@@ -41,20 +46,25 @@ def start_stream():
         "ffmpeg",
         "-stream_loop", "-1", "-i", VIDEO_FILE,   # infinite video loop
         "-stream_loop", "-1", "-i", AUDIO_FILE,   # infinite audio loop
-        "-map", "0:v:0",  # video from file
-        "-map", "1:a:0",  # audio from file
+        "-map", "0:v:0",
+        "-map", "1:a:0",
+
+        # Video settings
         "-c:v", "libx264",
         "-preset", "veryfast",
         "-b:v", "2500k",
         "-maxrate", "2500k",
         "-bufsize", "5000k",
         "-pix_fmt", "yuv420p",
+        "-g", "60",          # GOP = 2 sec for 30fps
+        "-r", "30",          # force 30fps output
+
+        # Audio settings
         "-c:a", "aac",
         "-b:a", "128k",
         "-ar", "44100",
-        "-shortest",              # dono inputs ko sync karega
-        "-f", "flv",
-        rtmp_url
+
+        "-f", "flv", rtmp_url
     ]
 
     subprocess.run(cmd)
@@ -64,8 +74,8 @@ if __name__ == "__main__":
     threading.Thread(target=run_flask, daemon=True).start()
     
     # Download video and audio from Drive
-    download_from_drive(VIDEO_DRIVE_ID, VIDEO_FILE)
-    download_from_drive(AUDIO_DRIVE_ID, AUDIO_FILE)
+    download_from_drive(VIDEO_DRIVE_ID, VIDEO_FILE, mode="video")
+    download_from_drive(AUDIO_DRIVE_ID, AUDIO_FILE, mode="audio")
     
     # Stream loop
     while True:
