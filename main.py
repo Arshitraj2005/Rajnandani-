@@ -5,7 +5,7 @@ import os
 
 # ==== CONFIG ====
 STREAM_KEY = "cec7-xy4y-9y7e-xk7t-4qxa"        # YouTube stream key
-VIDEO_DRIVE_ID = "1SqqVbApLnkj8rSnmfYBH7Yva90MxhPwa"   # Drive ID of video/GIF
+VIDEO_DRIVE_ID = "1SqqVbApLnkj8rSnmfYBH7Yva90MxhPwa"   # Drive ID of video/GIF/MP4
 AUDIO_DRIVE_ID = "1ilOvOl76gwquhWU-Xz78rcTOwLPdnizY"  # Drive ID of audio
 
 VIDEO_FILE = "overlay.mp4"   # Downloaded video/GIF
@@ -28,7 +28,8 @@ def download_from_drive(drive_id, output_file):
         return
     print(f"⬇️ Downloading {output_file} from Google Drive...")
     url = f"https://drive.google.com/uc?id={drive_id}&export=download"
-    cmd = ["yt-dlp", "-f", "best", "-o", output_file, url]
+    # Best video+audio merged as mp4 for smooth streaming
+    cmd = ["yt-dlp", "-f", "bestvideo+bestaudio", "--merge-output-format", "mp4", "-o", output_file, url]
     subprocess.run(cmd, check=True)
     print(f"✅ {output_file} downloaded successfully.")
 
@@ -44,16 +45,16 @@ def start_stream():
         "-map", "0:v:0",
         "-map", "1:a:0",
 
-        # Video encoding (fixed output for YouTube)
+        # Video encoding for smooth 720p stream
         "-c:v", "libx264",
         "-preset", "veryfast",
-        "-b:v", "2500k",        # fixed bitrate → 720p 30fps smooth
-        "-maxrate", "2500k",
-        "-bufsize", "5000k",
+        "-b:v", "1500k",        # lower for free Render CPU
+        "-maxrate", "1500k",
+        "-bufsize", "3000k",
         "-pix_fmt", "yuv420p",
         "-g", "60",             # GOP = 2s for 30fps
-        "-r", "30",             # force 30fps output
-        "-vf", "scale=1280:720",# force 720p resolution
+        "-r", "30",             # force 30fps
+        "-vf", "scale=1280:720",
 
         # Audio encoding
         "-c:a", "aac",
@@ -67,10 +68,13 @@ def start_stream():
 
 # ==== MAIN ====
 if __name__ == "__main__":
+    # Start Flask server for Render keep-alive
     threading.Thread(target=run_flask, daemon=True).start()
 
+    # Download video and audio from Drive
     download_from_drive(VIDEO_DRIVE_ID, VIDEO_FILE)
     download_from_drive(AUDIO_DRIVE_ID, AUDIO_FILE)
 
+    # Start infinite stream loop
     while True:
         start_stream()
